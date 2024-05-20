@@ -26,13 +26,22 @@ PPUOAM  = $4014
 
 .define OBJECTLEN #$0C ; 3*4
 .define SPRITELEN #$14 ; 5*4
-.define PLAYERSPEED #$02
 .define FLOOR #$7C
 .define OBJECTSIZE #$08
 .define OBJECTTOP #$74 ; FLOOR - OBJECTSIZE
-; TODO: Adapt PLAYERSPEED when on NTSC
-.define JUMPFORCE #$0A
-; TODO: Set the JUMPFORCE to #$08 when on NTSC
+
+.define PLAYERSPEED #$01
+.define PLAYERSPEEDSUB #$FE
+; TODO: Adapt PLAYERSPEEDSUB to #$98 when on NTSC
+
+.define JUMPFORCE #$08
+.define JUMPFORCESUB #$0
+; TODO: Set the JUMPFORCE to #$06 and JUMPFORCESUB to #$68 when on NTSC
+
+.define GRAVITY #$00
+.define GRAVITYSUB #$F0
+; TODO: Set GRAVITYSUB #$C0 when on NTSC
+
 PLAYERX = $0207
 PLAYERY = $0204
 PLAYERTILE = $0205

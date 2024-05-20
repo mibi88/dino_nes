@@ -22,6 +22,6 @@
 .byte %00000000 ; mapper + mirorring
 .byte $00
 .byte $00
+.byte %00000001
 .byte $00
-.byte $00
-.byte $00, $00, $00, $00, $00
+.byte $00, $01, $00, $00, $00

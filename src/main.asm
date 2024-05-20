@@ -39,30 +39,26 @@
 .segment "ZEROPAGE"
 
 ; For the game
-playeronepos2: .res 2
-objectpos2: .res 2
-collisioncheck: .res 1
-alreadycollision: .res 1
-collisionpos: .res 2
-collisionend: .res 2
 backgroundpos: .res 2
 state: .res 1
 seed: .res 1
 random: .res 1
-jump: .res 1
-fall: .res 1
+jump: .res 2
+fall: .res 2
+playersuby: .res 1
 change: .res 1
-scroll: .res 1
+scroll: .res 2
 tick: .res 1
 oldx: .res 1
 loopx: .res 1
+wait: .res 3
+extra: .res 1
 
 ; Less used variables
 .segment "BSS"
 controlleronein: .res 8
 score: .res 8
 hi: .res 8
-wait: .res 3
 
 ;------------------------------------;
 
@@ -72,13 +68,15 @@ wait: .res 3
 
 .proc RAND
     LDX seed
-    LDA RESET, X
+    LDA NMI, X
     EOR seed
     AND #%00110111
     ORA #%00001000
     STA random
+    LDA seed
+    SEC
+    ADC random
     STA seed
-    INC seed
     RTS
 .endproc
 
@@ -261,18 +259,26 @@ STATE1: ; In the game
     LDA #$00
     CMP jump
     BEQ FALL
-    DEC jump
+    LDA jump+1
+    SEC
+    SBC GRAVITYSUB
+    STA jump+1
+    LDA jump
+    SBC GRAVITY
+    STA jump
+    JMP CHECKUP
 FALL:
-    ; Fall increase
-    INC fall
-    LDA PLAYERY
-    CMP FLOOR
-    BMI CHECKUP
-ONFLOOR:
     LDA #$00
+    STA jump
+    STA jump+1
+    ; Fall increase
+    LDA fall+1
+    CLC
+    ADC GRAVITYSUB
+    STA fall+1
+    LDA fall
+    ADC GRAVITY
     STA fall
-    LDA FLOOR
-    STA PLAYERY
 CHECKUP:
     LDY controlleronein ; A button
     CPY #$01
@@ -381,8 +387,15 @@ MOVE:
     SEC
     SBC PLAYERSPEED
     STA OBJECTX, X
+    LDA extra
+    CMP #$01
+    BNE MOVECONTINUE
+    DEC OBJECTX, X
+MOVECONTINUE:
+    LDA OBJECTX, X
     CMP oldx
     BCC MOVELOOPEND
+    BEQ MOVELOOPEND
     LDA #$FF
     STA OBJECTX, X
     STX loopx
@@ -399,17 +412,48 @@ MOVELOOPEND:
     INX
     CPX OBJECTLEN
     BNE MOVEOBJLOOP
+    LDA #$00
+    STA extra
 NMIEND:
     ; Apply gravity and jump
-    LDA PLAYERY
+    ; Jump
+    LDA playersuby
     SEC
+    SBC jump+1
+    STA playersuby
+    LDA PLAYERY
     SBC jump
+    STA PLAYERY
+    ; Fall
+    LDA playersuby
     CLC
+    ADC fall+1
+    STA playersuby
+    LDA PLAYERY
     ADC fall
     STA PLAYERY
+    ; Collision with the ground
+    CMP FLOOR
+    BCC FLOORCHECKEND
+    ; If the player is on the floor
+    LDA #$00
+    STA fall
+    STA fall+1
+    STA jump
+    STA jump+1
+    LDA FLOOR
+    STA PLAYERY
+FLOORCHECKEND:
     ; End
-    LDA scroll
+    LDA scroll+1
     CLC
+    ADC PLAYERSPEEDSUB
+    STA scroll+1
+    BCC ADDSPEED
+    LDA #$01
+    STA extra
+ADDSPEED:
+    LDA scroll
     ADC PLAYERSPEED
     STA scroll
     ; Handle ticks
