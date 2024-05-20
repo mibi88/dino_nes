@@ -93,10 +93,7 @@ RESET: ; Start.
     STX PPUCTRL ; Zero at PPU registers.
     STX PPUMASK
     STX $4010 ; Disaling PCM channels (APU).
-VBLANKCHECK:
-    BIT PPUSTAT ; Waiting for VBLANK.
-    BPL VBLANKCHECK
-    TXA
+    LDX #$00
 MEMORYCLEAR:
     STA $0000, X ; $0000 > $00FF
     STA $0100, X ; $0100 > $01FF
@@ -112,6 +109,10 @@ MEMORYCLEAR:
     BNE MEMORYCLEAR
     STA jump
     STA fall
+    BIT PPUSTAT
+VBLANKCHECK:
+    BIT PPUSTAT ; Waiting for VBLANK.
+    BPL VBLANKCHECK
 VBLANKCHECKB:
     BIT PPUSTAT ; Waiting for VBLANK.
     BPL VBLANKCHECKB
@@ -164,6 +165,9 @@ COPYSPRITES:
     LDA #$00
     STA PPUSCRL ; X scroll
     STA PPUSCRL ; Y scroll
+    LDA state
+    CMP #$01
+    BNE READINPUT
 WAITS0CLEAR:
     BIT $2002
     BVS WAITS0CLEAR
@@ -174,6 +178,7 @@ WAITS0SET:
     STA PPUSCRL ; X scroll
     LDA #$00
     STA PPUSCRL ; Y scroll
+READINPUT:
     ; Read the controller input
     JSR READCONTROLLER1
 STATE0:
@@ -234,8 +239,8 @@ STATE2:
     CMP #$00
     BNE CHANGECHECK
     LDA controlleronein+3
-    CMP #$00
     STA change
+    CMP #$00
     BEQ STATE2END
 CHANGECHECK:
     LDA controlleronein+3
@@ -312,6 +317,9 @@ ISCOLLISION: ; If there is a collision
     ; Change to the game over screen
     LDA #$02
     STA state
+    ; Reset change because START was not pressed.
+    LDA #$00
+    STA change
     ; Load the game over nametable
     LDA #<GAMEOVERDATA ; Get the low byte of the bg data.
     STA backgroundpos
@@ -331,9 +339,6 @@ HIDEOBJLOOP:
     INX
     CPX OBJECTLEN
     BNE HIDEOBJLOOP
-    ; Reset change because START was not pressed.
-    LDA #$00
-    STA change
     ; Set scroll to 0 to keep the title and game over screens displayed at 0, 0
     STA scroll
     ; Set the hiscore
