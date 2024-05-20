@@ -28,7 +28,7 @@
 ;; Have fun when playing this small PAL NES game. I  ;;
 ;; will adapt it for NTSC later.                     ;;
 ;; ------------------------------------------------- ;;
-;; 2022/01/05 - 2024/05/19                           ;;
+;; 2022/01/05 - 2024/05/20                           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -274,7 +274,7 @@ ONFLOOR:
     LDA FLOOR
     STA PLAYERY
 CHECKUP:
-    LDY controlleronein+4 ; 4 to 7 -> dpad
+    LDY controlleronein ; A button
     CPY #$01
     BNE CHECKDOWN
     ; Jump
@@ -284,7 +284,7 @@ CHECKUP:
     LDA JUMPFORCE
     STA jump
 CHECKDOWN:
-    LDY controlleronein+5 ; 4 to 7 -> dpad
+    LDY controlleronein+1 ; B button
     CPY #$01
     BNE COLLISIONCHECK
     ; TODO: Crouch
