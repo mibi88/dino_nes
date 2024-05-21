@@ -56,6 +56,7 @@ extra: .res 1
 registers: .res 3
 nmi: .res 1
 ntsc: .res 1
+max_tick: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -151,6 +152,8 @@ SKIPY:
     STA fallspeed
     LDA FALLSPEEDSUBPAL
     STA fallspeed+1
+    LDA #$0C
+    STA max_tick
     JMP VBLANKCHECKB
 NTSC:
     LDA PLAYERSPEEDNTSC
@@ -165,6 +168,8 @@ NTSC:
     STA fallspeed
     LDA FALLSPEEDSUBNTSC
     STA fallspeed+1
+    LDA #$0A
+    STA max_tick
     ; Change the sprite
     LDA NTSCSPRITE
     STA ntsc
@@ -499,7 +504,7 @@ ADDSPEED:
     ; Handle ticks
     LDX tick
     INX
-    CPX #$0A
+    CPX max_tick
     BEQ RESETTICK
     STX tick
     JMP LOOP
