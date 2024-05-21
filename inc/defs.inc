@@ -25,22 +25,32 @@ PPUOAM  = $4014
 ; TODO: Move in subpixel units
 
 .define OBJECTLEN #$0C ; 3*4
-.define SPRITELEN #$14 ; 5*4
+.define SPRITELEN #$18 ; 6*4
 .define FLOOR #$7C
 .define OBJECTSIZE #$08
 .define OBJECTTOP #$74 ; FLOOR - OBJECTSIZE
 
-.define PLAYERSPEED #$01
-.define PLAYERSPEEDSUB #$FE
-; TODO: Adapt PLAYERSPEEDSUB to #$98 when on NTSC
+; PAL speeds
+.define PLAYERSPEEDPAL #$01
+.define PLAYERSPEEDSUBPAL #$FE
 
-.define JUMPFORCE #$08
-.define JUMPFORCESUB #$0
-; TODO: Set the JUMPFORCE to #$06 and JUMPFORCESUB to #$68 when on NTSC
+.define JUMPSPEEDPAL #$08
+.define JUMPSPEEDSUBPAL #$00
 
-.define GRAVITY #$00
-.define GRAVITYSUB #$F0
-; TODO: Set GRAVITYSUB #$C0 when on NTSC
+.define FALLSPEEDPAL #$00
+.define FALLSPEEDSUBPAL #$F0
+
+; NTSC speeds
+.define PLAYERSPEEDNTSC #$01
+.define PLAYERSPEEDSUBNTSC #$A9
+
+.define JUMPSPEEDNTSC #$08
+.define JUMPSPEEDSUBNTSC #$00
+
+.define FALLSPEEDNTSC #$00
+.define FALLSPEEDSUBNTSC #$C8
+
+.define NTSCSPRITE #$0F
 
 PLAYERX = $0207
 PLAYERY = $0204

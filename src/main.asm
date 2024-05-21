@@ -55,12 +55,16 @@ wait: .res 3
 extra: .res 1
 registers: .res 3
 nmi: .res 1
+ntsc: .res 1
 
 ; Less used variables
 .segment "BSS"
 controlleronein: .res 8
 score: .res 8
 hi: .res 8
+playerspeed: .res 2
+jumpspeed: .res 2
+fallspeed: .res 2
 
 ;------------------------------------;
 
@@ -116,6 +120,55 @@ MEMORYCLEAR:
 VBLANKCHECK:
     BIT PPUSTAT ; Waiting for VBLANK.
     BPL VBLANKCHECK
+    ; Checking TV System as described in
+    ; https://forums.nesdev.org/viewtopic.php?p=163258#p163258
+    LDX #$00
+    LDY #$00
+XLOOP:
+    INX
+    BNE SKIPY ; Branch if X != 0
+    INY
+SKIPY:
+    ; Check for vblank
+    BIT PPUSTAT ; Waiting for VBLANK.
+    BPL XLOOP
+    ; Adapt speed to the region
+    STY $0215
+    CPY #$09
+    BEQ NTSC
+    CPY #$13
+    BEQ NTSC
+    ; PAL or Dendy
+    LDA PLAYERSPEEDPAL
+    STA playerspeed
+    LDA PLAYERSPEEDSUBPAL
+    STA playerspeed+1
+    LDA JUMPSPEEDPAL
+    STA jumpspeed
+    LDA JUMPSPEEDSUBPAL
+    STA jumpspeed+1
+    LDA FALLSPEEDPAL
+    STA fallspeed
+    LDA FALLSPEEDSUBPAL
+    STA fallspeed+1
+    JMP VBLANKCHECKB
+NTSC:
+    LDA PLAYERSPEEDNTSC
+    STA playerspeed
+    LDA PLAYERSPEEDSUBNTSC
+    STA playerspeed+1
+    LDA JUMPSPEEDNTSC
+    STA jumpspeed
+    LDA JUMPSPEEDSUBNTSC
+    STA jumpspeed+1
+    LDA FALLSPEEDNTSC
+    STA fallspeed
+    LDA FALLSPEEDSUBNTSC
+    STA fallspeed+1
+    ; Change the sprite
+    LDA NTSCSPRITE
+    STA ntsc
+    LDA #$00
 VBLANKCHECKB:
     BIT PPUSTAT ; Waiting for VBLANK.
     BPL VBLANKCHECKB
@@ -148,6 +201,11 @@ LOADSPRITES:
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.
     STA PPUMASK
+    ; Set region sprite
+    LDA ntsc
+    CMP NTSCSPRITE
+    BNE LOOP
+    STA $0215
 LOOP:
     ; Check for NMI
     LDA nmi
@@ -243,10 +301,10 @@ STATE1: ; In the game
     BEQ FALL
     LDA jump+1
     SEC
-    SBC GRAVITYSUB
+    SBC fallspeed+1
     STA jump+1
     LDA jump
-    SBC GRAVITY
+    SBC fallspeed
     STA jump
     JMP CHECKUP
 FALL:
@@ -256,10 +314,10 @@ FALL:
     ; Fall increase
     LDA fall+1
     CLC
-    ADC GRAVITYSUB
+    ADC fallspeed+1
     STA fall+1
     LDA fall
-    ADC GRAVITY
+    ADC fallspeed
     STA fall
 CHECKUP:
     LDY controlleronein ; A button
@@ -269,7 +327,7 @@ CHECKUP:
     LDA PLAYERY; Check if the player is on the floor
     CMP FLOOR
     BNE CHECKDOWN
-    LDA JUMPFORCE
+    LDA jumpspeed
     STA jump
 CHECKDOWN:
     LDY controlleronein+1 ; B button
@@ -367,7 +425,7 @@ MOVE:
     LDA OBJECTX, X
     STA oldx
     SEC
-    SBC PLAYERSPEED
+    SBC playerspeed
     STA OBJECTX, X
     LDA extra
     CMP #$01
@@ -429,14 +487,14 @@ FLOORCHECKEND:
     ; End
     LDA scroll+1
     CLC
-    ADC PLAYERSPEEDSUB
+    ADC playerspeed+1
     STA scroll+1
     BCC ADDSPEED
     LDA #$01
     STA extra
 ADDSPEED:
     LDA scroll
-    ADC PLAYERSPEED
+    ADC playerspeed
     STA scroll
     ; Handle ticks
     LDX tick

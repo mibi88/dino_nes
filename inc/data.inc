@@ -28,3 +28,5 @@ SPRITEDATA:
     .byte $FF, $0C, %00100000, $FF
     ; Object 3
     .byte $FF, $0C, %00100000, $FF
+    ; Region
+    .byte $E2, $0E, %00000000, $E2
