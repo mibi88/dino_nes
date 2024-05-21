@@ -53,6 +53,8 @@ oldx: .res 1
 loopx: .res 1
 wait: .res 3
 extra: .res 1
+registers: .res 3
+nmi: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -68,7 +70,7 @@ hi: .res 8
 
 .proc RAND
     LDX seed
-    LDA NMI, X
+    LDA LOOP, X
     EOR seed
     AND #%00110111
     ORA #%00001000
@@ -93,6 +95,7 @@ RESET: ; Start.
     STX $4010 ; Disaling PCM channels (APU).
     LDX #$00
 MEMORYCLEAR:
+    LDA #$00
     STA $0000, X ; $0000 > $00FF
     STA $0100, X ; $0100 > $01FF
     STA $0300, X ; $0300 > $03FF
@@ -100,9 +103,11 @@ MEMORYCLEAR:
     STA $0500, X ; $0500 > $05FF
     STA $0600, X ; $0600 > $06FF
     STA $0700, X ; $0700 > $07FF
+    ; Clear the BSS
+    STA $6000, X
+    STA $7000, X
     LDA #$FF ; I will store sprites in $0200 to $02FF.
     STA PLAYERY, X ; $0200 > $02FF
-    LDA #$00
     INX
     BNE MEMORYCLEAR
     STA jump
@@ -144,46 +149,23 @@ LOADSPRITES:
     LDA #%00011110 ; Enabling drawings.
     STA PPUMASK
 LOOP:
-    JMP LOOP
-
-NMI: ;Non-maskable interrupt.
-    ; Update the score
-    LDA state
+    ; Check for NMI
+    LDA nmi
     CMP #$01
-    BNE GAMEOVERSCORE
-    JSR DRAWSCORE
-GAMEOVERSCORE:
-    CMP #$02
-    BNE COPYSPRITES
-    JSR DRAWSCOREGAMEOVER
-COPYSPRITES:
-    LDA #$02 ; Copy the sprite data into the PPU.
-    STA PPUOAM
-    ; Handle the status bar
+    BNE LOOP
     LDA #$00
-    STA PPUSCRL ; X scroll
-    STA PPUSCRL ; Y scroll
-    LDA state
-    CMP #$01
-    BNE READINPUT
-WAITS0CLEAR:
-    BIT $2002
-    BVS WAITS0CLEAR
-WAITS0SET:
-    BIT $2002
-    BVC WAITS0SET
-    LDA scroll
-    STA PPUSCRL ; X scroll
-    LDA #$00
-    STA PPUSCRL ; Y scroll
-READINPUT:
+    STA nmi
     ; Read the controller input
     JSR READCONTROLLER1
-STATE0:
+    ; State 0
     LDA state
     CMP #$01
-    BEQ STATE1
-    BPL STATE2
+    BCC STATE0
+    BEQ STATEJUMP
+    BCS STATE2
+STATEJUMP:
+    JMP STATE1
+STATE0:
     INC seed
     LDA controlleronein+3
     CMP #$00
@@ -231,7 +213,7 @@ RESETLOOP:
     CPX #$08
     BNE RESETLOOP
 STATE0END:
-    RTI
+    JMP LOOP
 STATE2:
     LDA change
     CMP #$00
@@ -253,7 +235,7 @@ CHANGECHECK:
     STA backgroundpos+1
     JSR LOADNAMINGAME
 STATE2END:
-    RTI
+    JMP LOOP
 STATE1: ; In the game
     ; Jump decrease
     LDA #$00
@@ -369,7 +351,7 @@ HISETLOOP:
     CPX #$08
     BNE HISETLOOP
 GAMEEND:
-    RTI
+    JMP LOOP
 MOVEOBJECT:
     LDX #$00
     LDY #$00
@@ -462,7 +444,7 @@ ADDSPEED:
     CPX #$0A
     BEQ RESETTICK
     STX tick
-    RTI
+    JMP LOOP
 RESETTICK:
     LDX #$00
     STX tick
@@ -484,13 +466,53 @@ SCORELOOP:
     LDA score, X
     CMP #$0A
     BEQ NEXT
-    RTI
+    JMP LOOP
 NEXT:
     LDA #$00
     STA score, X
     CPX #$00
     BNE SCORELOOP
+    JMP LOOP
+
+NMI: ;Non-maskable interrupt.
+    STA registers
+    STX registers+1
+    STY registers+2
+    LDA #$01
+    STA nmi
+    ; Update the score
+    LDA state
+    CMP #$01
+    BNE GAMEOVERSCORE
+    JSR DRAWSCORE
+GAMEOVERSCORE:
+    CMP #$02
+    BNE COPYSPRITES
+    JSR DRAWSCOREGAMEOVER
+COPYSPRITES:
+    LDA #$02 ; Copy the sprite data into the PPU.
+    STA PPUOAM
+    ; Handle the status bar
+    LDA #$00
+    STA PPUSCRL ; X scroll
+    STA PPUSCRL ; Y scroll
+    LDA state
+    CMP #$01
+    BNE END
+WAITS0CLEAR:
+    BIT $2002
+    BVS WAITS0CLEAR
+WAITS0SET:
+    BIT $2002
+    BVC WAITS0SET
+    LDA scroll
+    STA PPUSCRL ; X scroll
+    LDA #$00
+    STA PPUSCRL ; Y scroll
 END:
+    LDA registers
+    LDX registers+1
+    LDY registers+2
     RTI
 .include "../inc/data.inc"
 .include "../inc/nametables.inc"

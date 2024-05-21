@@ -75,7 +75,6 @@ END:
 .endproc
 
 .proc LOADNAMINGAME
-    SEI
     LDA #$00
     STA PPUCTRL ; Zero at PPU registers.
     STA PPUMASK
@@ -85,8 +84,6 @@ END:
     STA PPUADDR
     LDA #$00
     STA PPUADDR
-    STA PPUCTRL ; Zero at PPU registers.
-    STA PPUMASK
     LDX #$00
     LDY #$00
 LOOP:
@@ -111,12 +108,10 @@ END:
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.
     STA PPUMASK
-    CLI
     RTS
 .endproc
 
 .proc DRAWSCORE
-    SEI
     LDA #$00
     STA PPUCTRL ; Zero at PPU registers.
     STA PPUMASK
@@ -126,8 +121,6 @@ END:
     STA PPUADDR
     LDA #$48
     STA PPUADDR
-    STA PPUCTRL ; Zero at PPU registers.
-    STA PPUMASK
     LDX #$00
     ; Set the tiles
 SLOOP:
@@ -157,12 +150,10 @@ HLOOP:
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.
     STA PPUMASK
-    CLI
     RTS
 .endproc
 
 .proc DRAWSCOREGAMEOVER
-    SEI
     LDA #$00
     STA PPUCTRL ; Zero at PPU registers.
     STA PPUMASK
@@ -172,8 +163,6 @@ HLOOP:
     STA PPUADDR
     LDA #$89
     STA PPUADDR
-    STA PPUCTRL ; Zero at PPU registers.
-    STA PPUMASK
     LDX #$00
     ; Set the tiles
 SLOOP:
@@ -203,7 +192,6 @@ HLOOP:
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.
     STA PPUMASK
-    CLI
     RTS
 .endproc
 
