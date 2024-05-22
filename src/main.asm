@@ -53,7 +53,6 @@ oldx: .res 1
 loopx: .res 1
 wait: .res 3
 extra: .res 1
-registers: .res 3
 nmi: .res 1
 ntsc: .res 1
 max_tick: .res 1
@@ -538,9 +537,11 @@ NEXT:
     JMP LOOP
 
 NMI: ;Non-maskable interrupt.
-    STA registers
-    STX registers+1
-    STY registers+2
+    PHA
+    TXA
+    PHA
+    TYA
+    PHA
     LDA #$01
     STA nmi
     ; Update the score
@@ -573,9 +574,11 @@ WAITS0SET:
     LDA #$00
     STA PPUSCRL ; Y scroll
 END:
-    LDA registers
-    LDX registers+1
-    LDY registers+2
+    PLA
+    TAY
+    PLA
+    TAX
+    PLA
     RTI
 .include "../inc/data.inc"
 .include "../inc/nametables.inc"
