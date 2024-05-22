@@ -29,6 +29,8 @@ PPUOAM  = $4014
 .define FLOOR #$7C
 .define OBJECTSIZE #$08
 .define OBJECTTOP #$74 ; FLOOR - OBJECTSIZE
+.define NIGHT_MAX #$02
+.define CYCLEDIGIT 5
 
 ; PAL speeds
 .define PLAYERSPEEDPAL #$01

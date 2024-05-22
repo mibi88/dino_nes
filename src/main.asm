@@ -56,6 +56,9 @@ extra: .res 1
 nmi: .res 1
 ntsc: .res 1
 max_tick: .res 1
+night: .res 1
+pnight: .res 1
+tmp: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -107,11 +110,10 @@ MEMORYCLEAR:
     STA $0500, X ; $0500 > $05FF
     STA $0600, X ; $0600 > $06FF
     STA $0700, X ; $0700 > $07FF
-    ; Clear the BSS
+    ; Clear the start of the BSS
     STA $6000, X
-    STA $7000, X
     LDA #$FF ; I will store sprites in $0200 to $02FF.
-    STA PLAYERY, X ; $0200 > $02FF
+    STA $0200, X ; $0200 > $02FF
     INX
     BNE MEMORYCLEAR
     STA jump
@@ -370,6 +372,10 @@ ISCOLLISION: ; If there is a collision
     ; Reset change because START was not pressed.
     LDA #$00
     STA change
+    ; Reset palette
+    LDA #$00
+    STA night
+    JSR LOADPALETTESINGAME
     ; Load the game over nametable
     LDA #<GAMEOVERDATA ; Get the low byte of the bg data.
     STA backgroundpos
@@ -510,6 +516,27 @@ ADDSPEED:
 RESETTICK:
     LDX #$00
     STX tick
+    ; Handle the day/night cycle
+    LDA score+CYCLEDIGIT
+    AND #%11111110
+    STA tmp
+    LDA score+CYCLEDIGIT
+    SEC
+    SBC tmp
+    CMP #$00
+    BNE NIGHT
+    ; Day
+    LDA night
+    CMP #$00
+    BEQ DINO
+    DEC night
+    JMP DINO
+NIGHT:
+    LDA night
+    CMP NIGHT_MAX
+    BEQ DINO
+    INC night
+DINO:
     ; Animate the dino
     LDX PLAYERTILE
     INX
@@ -549,6 +576,8 @@ NMI: ;Non-maskable interrupt.
     CMP #$01
     BNE GAMEOVERSCORE
     JSR DRAWSCORE
+    ; Update the palette
+    JSR LOADPALETTESINGAME
 GAMEOVERSCORE:
     CMP #$02
     BNE COPYSPRITES

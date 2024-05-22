@@ -28,6 +28,42 @@ LOOP:
     RTS
 .endproc
 
+.proc LOADPALETTESINGAME
+    LDA night
+    ASL
+    ASL
+    ASL
+    ASL
+    STA pnight
+    LDA #$00
+    STA PPUCTRL ; Zero at PPU registers.
+    STA PPUMASK
+    ; Adress $3F00 (Universal background) from the PPU.
+    LDA #$3F
+    STA PPUADDR ; Asking to write in the memory of the PPU.
+    LDA #$00
+    STA PPUADDR
+    LDX #$00
+    LDY night
+LOOP:
+    LDA PALETTEDATA, X
+    SEC
+    SBC pnight
+    BCS SKIP
+    AND #%00001111
+SKIP:
+    STA PPUDATA ; Store palette data into the PPU memory.
+    INX
+    CPX #$20 ; 32 in decimal.
+    BNE LOOP
+    LDX #$00
+    LDA #%10010000 ; Setting up the PPU.
+    STA PPUCTRL
+    LDA #%00011110 ; Enabling drawings.
+    STA PPUMASK
+    RTS
+.endproc
+
 .proc READCONTROLLER1
     LDA #$01 ; Read controller 1 input
     STA $4016
