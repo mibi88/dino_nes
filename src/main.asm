@@ -51,7 +51,6 @@ scroll: .res 2
 tick: .res 1
 oldx: .res 1
 loopx: .res 1
-wait: .res 3
 extra: .res 1
 nmi: .res 1
 ntsc: .res 1
@@ -59,6 +58,7 @@ max_tick: .res 1
 night: .res 1
 pnight: .res 1
 tmp: .res 1
+objlimit: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -68,6 +68,7 @@ hi: .res 8
 playerspeed: .res 2
 jumpspeed: .res 2
 fallspeed: .res 2
+wait: .res 6
 
 ;------------------------------------;
 
@@ -79,8 +80,8 @@ fallspeed: .res 2
     LDX seed
     LDA LOOP, X
     EOR seed
-    AND #%00110111
-    ORA #%00001000
+    AND #%00111111
+    ORA #%00000100
     STA random
     LDA seed
     SEC
@@ -135,7 +136,6 @@ SKIPY:
     BIT PPUSTAT ; Waiting for VBLANK.
     BPL XLOOP
     ; Adapt speed to the region
-    STY $0215
     CPY #$09
     BEQ NTSC
     CPY #$13
@@ -211,7 +211,7 @@ LOADSPRITES:
     LDA ntsc
     CMP NTSCSPRITE
     BNE LOOP
-    STA $0215
+    STA REGIONTILE
 LOOP:
     ; Check for NMI
     LDA nmi
@@ -244,6 +244,8 @@ STATE0:
     JSR LOADNAMINGAME
     LDA FLOOR
     STA PLAYERY
+    LDA STARTLIMIT
+    STA objlimit
     LDX #$00
     LDY #$00
 OBJINITLOOP:
@@ -253,9 +255,21 @@ OBJINITLOOP:
     STA OBJECTX, X
     STX loopx
     JSR RAND
-    LDX loopx
     LDA random
     STA wait, Y
+    JSR RAND
+    LDX loopx
+    CPX BIRDSTART
+    BCC SETHEIGHT
+    LDA FLOOR
+    SEC
+    SBC random
+    STA OBJECTY, X
+    JMP CONTINUEINIT
+SETHEIGHT:
+    LDA FLOOR
+    STA OBJECTY, X
+CONTINUEINIT:
     INY
     ; Increase X by 4
     INX
@@ -341,12 +355,22 @@ CHECKDOWN:
     BNE COLLISIONCHECK
     ; TODO: Crouch
 COLLISIONCHECK:
-    LDA OBJECTTOP
-    CMP PLAYERY
-    BCS MOVEOBJECT
-    ; Check for collision on the X axis for all objects
+    ; Adapt the player position for collision check
+    LDA PLAYERY
+    CLC
+    ADC #$04
+    STA PLAYERY
+    ; Check for collision for all objects
     LDY #$00
 CHECKLOOP:
+    LDA OBJECTY, Y
+    CMP PLAYERY
+    BCS CHECKNEXT
+    CLC
+    ADC OBJECTSIZE
+    CMP PLAYERY
+    BCC CHECKNEXT
+    ; Check on the X axis
     LDA OBJECTX, Y
     TAX
     CLC
@@ -421,6 +445,11 @@ HISETLOOP:
 GAMEEND:
     JMP LOOP
 MOVEOBJECT:
+    ; Restore the player position after collision check
+    LDA PLAYERY
+    SEC
+    SBC #$04
+    STA PLAYERY
     LDX #$00
     LDY #$00
 MOVEOBJLOOP:
@@ -452,7 +481,14 @@ MOVECONTINUE:
     JSR RAND
     LDA random
     STA wait, Y
+    JSR RAND
     LDX loopx
+    CPX BIRDSTART
+    BCC MOVELOOPEND
+    LDA FLOOR
+    SEC
+    SBC random
+    STA OBJECTY, X
 MOVELOOPEND:
     INY
     ; Increase X by 4
@@ -460,7 +496,7 @@ MOVELOOPEND:
     INX
     INX
     INX
-    CPX OBJECTLEN
+    CPX objlimit
     BNE MOVEOBJLOOP
     LDA #$00
     STA extra
@@ -516,6 +552,30 @@ ADDSPEED:
 RESETTICK:
     LDX #$00
     STX tick
+    ; Animate the birds
+    LDX BIRDSTART
+BIRDLOOP:
+    LDY OBJECTTILE, X
+    LDA #$11
+    STA OBJECTTILE, X
+    CPY #$11
+    BNE CONTINUEBIRDLOOP
+    LDA #$10
+    STA OBJECTTILE, X
+CONTINUEBIRDLOOP:
+    INX
+    INX
+    INX
+    INX
+    CPX BIRDEND
+    BCC BIRDLOOP
+    ; Update the object limit
+    LDA score+BIRDDIGIT
+    CMP BIRDDIGITMIN
+    BNE DAYNIGHT
+    LDA OBJECTLEN
+    STA objlimit
+DAYNIGHT:
     ; Handle the day/night cycle
     LDA score+CYCLEDIGIT
     AND #%11111110

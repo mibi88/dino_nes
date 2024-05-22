@@ -24,13 +24,19 @@ PPUOAM  = $4014
 ;;;;;;;;;;;;;;;
 ; TODO: Move in subpixel units
 
-.define OBJECTLEN #$0C ; 3*4
-.define SPRITELEN #$18 ; 6*4
+.define BIRDSTART #$0C
+.define BIRDEND OBJECTLEN
+.define OBJECTLEN #$18 ; 6*4
+.define SPRITELEN #$24 ; 9*4
 .define FLOOR #$7C
 .define OBJECTSIZE #$08
 .define OBJECTTOP #$74 ; FLOOR - OBJECTSIZE
 .define NIGHT_MAX #$02
 .define CYCLEDIGIT 5
+
+.define STARTLIMIT #$0C ; 3*4
+.define BIRDDIGIT 6
+.define BIRDDIGITMIN #$05
 
 ; PAL speeds
 .define PLAYERSPEEDPAL #$01
@@ -58,5 +64,6 @@ PLAYERX = $0207
 PLAYERY = $0204
 PLAYERTILE = $0205
 OBJECTX  = $020B
-OBJECTTILE  = $020C
+OBJECTTILE  = $0209
 OBJECTY  = $0208
+REGIONTILE = $0221
