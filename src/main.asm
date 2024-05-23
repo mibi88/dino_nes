@@ -59,6 +59,7 @@ night: .res 1
 pnight: .res 1
 tmp: .res 1
 objlimit: .res 1
+loopy: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -69,6 +70,8 @@ playerspeed: .res 2
 jumpspeed: .res 2
 fallspeed: .res 2
 wait: .res 6
+extraspeed: .res 6
+speedsub: .res 6
 
 ;------------------------------------;
 
@@ -226,14 +229,18 @@ LOOP:
     CMP #$01
     BCC STATE0
     BEQ STATEJUMP
-    BCS STATE2
+    BCS STATEJUMP2
 STATEJUMP:
     JMP STATE1
+STATEJUMP2:
+    JMP STATE2
 STATE0:
     INC seed
     LDA controlleronein+3
     CMP #$00
-    BEQ STATE0END
+    BNE CHANGESCREEN
+    JMP STATE0END
+CHANGESCREEN:
     LDA #$01
     STA state
     ; Load the background
@@ -258,6 +265,9 @@ OBJINITLOOP:
     LDA random
     STA wait, Y
     JSR RAND
+    LDA random
+    STA tmp
+    JSR RAND
     LDX loopx
     LDA VOIDSPRITE
     STA OBJECTTILE, X
@@ -267,10 +277,17 @@ OBJINITLOOP:
     SEC
     SBC random
     STA OBJECTY, X
+    LDA tmp
+    AND #%00000011
+    CLC
+    ADC #$01
+    STA extraspeed, Y
     JMP CONTINUEINIT
 SETHEIGHT:
     LDA FLOOR
     STA OBJECTY, X
+    LDA #$00
+    STA extraspeed, Y
 CONTINUEINIT:
     INY
     ; Increase X by 4
@@ -469,6 +486,31 @@ MOVE:
     LDA #$0C
     STA OBJECTTILE, X
 UPDATEX:
+    ; Apply the extra speed
+    LDA extraspeed, Y
+    CMP #$00
+    BEQ SCROLL
+    STA loopx ; Loop maximum
+    STY loopy ; Save Y
+    LDY #$00
+EXTRALOOP:
+    STX tmp
+    LDX loopy
+    LDA speedsub, X
+    SEC
+    SBC playerspeed+1
+    STA speedsub, X
+    LDX tmp
+    LDA OBJECTX, X
+    SBC #$00
+    STA OBJECTX, X
+INCSKIP:
+    INY
+    CPY loopx
+    BCC EXTRALOOP
+    LDY loopy
+SCROLL:
+    ; Scroll to the left
     LDA OBJECTX, X
     STA oldx
     SEC
@@ -490,6 +532,9 @@ MOVECONTINUE:
     LDA random
     STA wait, Y
     JSR RAND
+    LDA random
+    STA tmp
+    JSR RAND
     LDX loopx
     LDA VOIDSPRITE
     STA OBJECTTILE, X
@@ -499,6 +544,11 @@ MOVECONTINUE:
     SEC
     SBC random
     STA OBJECTY, X
+    LDA tmp
+    AND #%00000011
+    CLC
+    ADC #$01
+    STA extraspeed, Y
 MOVELOOPEND:
     INY
     ; Increase X by 4
@@ -507,7 +557,9 @@ MOVELOOPEND:
     INX
     INX
     CPX objlimit
-    BNE MOVEOBJLOOP
+    BEQ MOVEEND
+    JMP MOVEOBJLOOP
+MOVEEND:
     LDA #$00
     STA extra
 NMIEND:
