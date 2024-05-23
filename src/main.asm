@@ -379,6 +379,10 @@ COLLISIONCHECK:
     CLC
     ADC #$04
     STA PLAYERY
+    LDA PLAYERX
+    CLC
+    ADC #$04
+    STA PLAYERX
     ; Check for collision for all objects
     LDY #$00
 CHECKLOOP:
@@ -469,6 +473,10 @@ MOVEOBJECT:
     SEC
     SBC #$04
     STA PLAYERY
+    LDA PLAYERX
+    SEC
+    SBC #$04
+    STA PLAYERX
     LDX #$00
     LDY #$00
 MOVEOBJLOOP:
