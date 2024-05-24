@@ -32,6 +32,7 @@ PPUOAM  = $4014
 .define OBJECTSIZE #$08
 .define OBJECTTOP #$74 ; FLOOR - OBJECTSIZE
 .define NIGHT_MAX #$02
+.define BLACK_NIGHT NIGHT_MAX+1
 .define CYCLEDIGIT 5
 
 .define STARTLIMIT #$0C ; 3*4

@@ -51,6 +51,10 @@ LOOP:
     SBC pnight
     BCS SKIP
     AND #%00001111
+    LDA night
+    CMP BLACK_NIGHT
+    BNE SKIP
+    LDA #$0D
 SKIP:
     STA PPUDATA ; Store palette data into the PPU memory.
     INX

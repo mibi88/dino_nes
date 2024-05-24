@@ -94,6 +94,86 @@ speedsub: .res 6
     RTS
 .endproc
 
+.proc FADEIN
+    LDA night
+    CMP BLACK_NIGHT
+    BNE LOOP
+    RTS
+LOOP:
+    LDA nmi
+    CMP #$01
+    BNE LOOP
+    LDA #$00
+    STA nmi
+    ; Handle ticks
+    LDX tick
+    INX
+    CPX max_tick
+    BEQ RESETTICK
+    STX tick
+    JMP LOOP
+RESETTICK:
+    LDX #$00
+    STX tick
+    ; Fade in
+    INC night
+    LDA night
+    CMP BLACK_NIGHT
+    BNE LOOP
+    RTS
+.endproc
+
+.proc FADEOUT
+    LDA BLACK_NIGHT
+    STA night
+LOOP:
+    LDA nmi
+    CMP #$01
+    BNE LOOP
+    LDA #$00
+    STA nmi
+    ; Handle ticks
+    LDX tick
+    INX
+    CPX max_tick
+    BEQ RESETTICK
+    STX tick
+    JMP LOOP
+RESETTICK:
+    LDX #$00
+    STX tick
+    ; Fade in
+    DEC night
+    LDA night
+    CMP #$00
+    BNE LOOP
+    RTS
+.endproc
+
+.proc PLAYERANIM
+    LDA #$12
+    STA PLAYERTILE
+ANIMLOOP:
+    LDA nmi
+    CMP #$01
+    BNE ANIMLOOP
+    LDA #$00
+    STA nmi
+    LDA PLAYERY
+    CLC
+    ADC #$06
+    STA PLAYERY
+    CMP FLOOR
+    BCC ANIMLOOP
+    ; Animation end
+    LDA FLOOR
+    STA PLAYERY
+    LDA #$0A
+    STA PLAYERTILE
+    RTS
+.endproc
+    
+
 RESET: ; Start.
     SEI ; Disable the interrupts.
     CLD ; Disable decimal mode.
@@ -246,6 +326,7 @@ STATE0:
     BNE CHANGESCREEN
     JMP STATE0END
 CHANGESCREEN:
+    JSR FADEIN
     LDA #$01
     STA state
     ; Load the background
@@ -314,6 +395,13 @@ RESETLOOP:
     INX
     CPX #$08
     BNE RESETLOOP
+    LDA VOIDSPRITE
+    STA PLAYERTILE
+    JSR FADEOUT
+    ; A little animation
+    LDA #$00
+    STA PLAYERY
+    JSR PLAYERANIM
 STATE0END:
     JMP LOOP
 STATE2:
@@ -328,6 +416,7 @@ CHANGECHECK:
     LDA controlleronein+3
     CMP #$00
     BNE STATE2END
+    JSR FADEIN
     LDA #$00
     STA state
     ; Load the background
@@ -336,6 +425,7 @@ CHANGECHECK:
     LDA #>TITLEDATA ; Get the high byte.
     STA backgroundpos+1
     JSR LOADNAMINGAME
+    JSR FADEOUT
 STATE2END:
     JMP LOOP
 STATE1: ; In the game
@@ -418,6 +508,8 @@ CHECKNEXT:
     BNE CHECKLOOP
     JMP MOVEOBJECT
 ISCOLLISION: ; If there is a collision
+    JSR PLAYERANIM
+    JSR FADEIN
     ; Change to the game over screen
     LDA #$02
     STA state
@@ -471,6 +563,7 @@ HISETLOOP:
     CPX #$08
     BNE HISETLOOP
 GAMEEND:
+    JSR FADEOUT
     JMP LOOP
 MOVEOBJECT:
     ; Restore the player position after collision check
@@ -706,6 +799,9 @@ NMI: ;Non-maskable interrupt.
     PHA
     TYA
     PHA
+    BIT PPUSTAT
+    ; Update the palette
+    JSR LOADPALETTESINGAME
     LDA #$01
     STA nmi
     ; Update the score
@@ -713,8 +809,6 @@ NMI: ;Non-maskable interrupt.
     CMP #$01
     BNE GAMEOVERSCORE
     JSR DRAWSCORE
-    ; Update the palette
-    JSR LOADPALETTESINGAME
 GAMEOVERSCORE:
     CMP #$02
     BNE COPYSPRITES
