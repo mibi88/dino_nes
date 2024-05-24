@@ -69,6 +69,7 @@ hi: .res 8
 playerspeed: .res 2
 jumpspeed: .res 2
 fallspeed: .res 2
+extraspeedsub: .res 1
 wait: .res 6
 extraspeed: .res 6
 speedsub: .res 6
@@ -156,8 +157,10 @@ SKIPY:
     STA fallspeed
     LDA FALLSPEEDSUBPAL
     STA fallspeed+1
-    LDA #$0C
+    LDA TICKMAXPAL
     STA max_tick
+    LDA EXTRASPEEDSUBPAL
+    STA extraspeedsub
     JMP VBLANKCHECKB
 NTSC:
     LDA PLAYERSPEEDNTSC
@@ -172,8 +175,10 @@ NTSC:
     STA fallspeed
     LDA FALLSPEEDSUBNTSC
     STA fallspeed+1
-    LDA #$0A
+    LDA TICKMAXNTSC
     STA max_tick
+    LDA EXTRASPEEDSUBNTSC
+    STA extraspeedsub
     ; Change the sprite
     LDA NTSCSPRITE
     STA ntsc
@@ -506,7 +511,7 @@ EXTRALOOP:
     LDX loopy
     LDA speedsub, X
     SEC
-    SBC playerspeed+1
+    SBC extraspeedsub
     STA speedsub, X
     LDX tmp
     LDA OBJECTX, X
