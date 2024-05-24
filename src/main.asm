@@ -73,6 +73,7 @@ extraspeedsub: .res 1
 wait: .res 6
 extraspeed: .res 6
 speedsub: .res 6
+animspeed: .res 1
 
 ;------------------------------------;
 
@@ -161,7 +162,7 @@ ANIMLOOP:
     STA nmi
     LDA PLAYERY
     CLC
-    ADC #$06
+    ADC animspeed
     STA PLAYERY
     CMP FLOOR
     BCC ANIMLOOP
@@ -241,6 +242,8 @@ SKIPY:
     STA max_tick
     LDA EXTRASPEEDSUBPAL
     STA extraspeedsub
+    LDA ANIMPAL
+    STA animspeed
     JMP VBLANKCHECKB
 NTSC:
     LDA PLAYERSPEEDNTSC
@@ -259,6 +262,8 @@ NTSC:
     STA max_tick
     LDA EXTRASPEEDSUBNTSC
     STA extraspeedsub
+    LDA ANIMNTSC
+    STA animspeed
     ; Change the sprite
     LDA NTSCSPRITE
     STA ntsc

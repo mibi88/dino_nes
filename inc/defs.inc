@@ -53,6 +53,8 @@ PPUOAM  = $4014
 
 .define TICKMAXPAL #$0C
 
+.define ANIMPAL #$06
+
 ; NTSC speeds
 .define PLAYERSPEEDNTSC #$01
 .define PLAYERSPEEDSUBNTSC #$A9
@@ -66,6 +68,8 @@ PPUOAM  = $4014
 .define EXTRASPEEDSUBNTSC #$96
 
 .define TICKMAXNTSC #$0A
+
+.define ANIMNTSC #$05
 
 .define NTSCSPRITE #$0F
 
