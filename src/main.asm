@@ -531,6 +531,8 @@ CHECKNEXT:
     JMP MOVEOBJECT
 ISCOLLISION: ; If there is a collision
     JSR PLAYERANIM
+    LDA DEADPLAYER
+    STA PLAYERTILE
     JSR FADEIN
     ; Change to the game over screen
     LDA #$02
