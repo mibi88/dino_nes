@@ -20,3 +20,7 @@ GAMEDATA:
     .incbin "../nam/game.nam"
 GAMEOVERDATA:
     .incbin "../nam/game_over.nam"
+HELPDATA:
+    .incbin "../nam/help.nam"
+CREDITSDATA:
+    .incbin "../nam/credits.nam"

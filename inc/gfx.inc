@@ -151,6 +151,43 @@ END:
     RTS
 .endproc
 
+.proc LOADNAM2
+    LDA #$00
+    STA PPUCTRL ; Zero at PPU registers.
+    STA PPUMASK
+    ; Get ready for the loop.
+    BIT PPUSTAT ; Setup the PPU for the nametable data.
+    LDA #$28
+    STA PPUADDR
+    LDA #$00
+    STA PPUADDR
+    LDX #$00
+    LDY #$00
+LOOP:
+    ; Copy the data.
+    LDA (backgroundpos), Y
+    STA PPUDATA
+    INY
+    ; Check if we need to continue.
+    CPX #$04
+    BNE XLOOP
+    CPY #$01
+    BEQ END
+XLOOP:
+    ; X loop.
+    CPY #$00
+    BNE LOOP
+    INX
+    INC backgroundpos+1
+    JMP LOOP
+END:
+    LDA #%10010000 ; Setting up the PPU.
+    STA PPUCTRL
+    LDA #%00011110 ; Enabling drawings.
+    STA PPUMASK
+    RTS
+.endproc
+
 .proc DRAWSCORE
     LDA #$00
     STA PPUCTRL ; Zero at PPU registers.

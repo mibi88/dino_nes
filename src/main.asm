@@ -60,6 +60,7 @@ pnight: .res 1
 tmp: .res 1
 objlimit: .res 1
 loopy: .res 1
+screenscroll: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -75,6 +76,7 @@ extraspeed: .res 6
 speedsub: .res 6
 animspeed: .res 1
 cloudtick: .res 1
+selected: .res 1
 
 ;------------------------------------;
 
@@ -174,7 +176,85 @@ ANIMLOOP:
     STA PLAYERTILE
     RTS
 .endproc
-    
+
+.proc INFOSCREENIN
+    LDA #$00
+    STA screenscroll
+SCROLLLOOP:
+    LDA nmi
+    CMP #$01
+    BNE SCROLLLOOP
+    LDA #$00
+    STA nmi
+    LDA screenscroll
+    CLC
+    ADC animspeed
+    STA screenscroll
+    CMP #$EF
+    BCC SCROLLLOOP
+    ; Set the scrolling
+    LDA #$EF
+    STA screenscroll
+    RTS
+.endproc
+
+.proc INFOSCREENOUT
+    LDA #$EF
+    STA screenscroll
+SCROLLLOOP:
+    LDA nmi
+    CMP #$01
+    BNE SCROLLLOOP
+    LDA #$00
+    STA nmi
+    LDA screenscroll
+    SEC
+    SBC animspeed
+    STA screenscroll
+    BCS SCROLLLOOP
+    ; Set the scrolling
+    LDA #$00
+    STA screenscroll
+    RTS
+.endproc
+
+.proc HIDESELECT
+    LDA nmi
+    CMP #$01
+    BNE HIDESELECT
+    LDA #$00
+    STA nmi
+    LDA SELECTX
+    SEC
+    SBC animspeed
+    STA SELECTX
+    BCS HIDESELECT
+    LDA #$00
+    STA SELECTX
+    LDA VOIDSPRITE
+    STA SELECTTILE
+    RTS
+.endproc
+
+.proc DISPLAYSELECT
+    LDA CURSOR
+    STA SELECTTILE
+LOOP:
+    LDA nmi
+    CMP #$01
+    BNE LOOP
+    LDA #$00
+    STA nmi
+    LDA SELECTX
+    CLC
+    ADC animspeed
+    STA SELECTX
+    CMP SELECTSTARTX
+    BCC LOOP
+    LDA SELECTSTARTX
+    STA SELECTX
+    RTS
+.endproc
 
 RESET: ; Start.
     SEI ; Disable the interrupts.
@@ -304,6 +384,8 @@ LOADSPRITES:
     CMP NTSCSPRITE
     BNE LOOP
     STA REGIONTILE
+    ; Animation
+    JSR DISPLAYSELECT
 LOOP:
     ; Check for NMI
     LDA nmi
@@ -327,7 +409,68 @@ STATE0:
     INC seed
     LDA controlleronein+3
     CMP #$00
-    BNE CHANGESCREEN
+    BNE MENU
+    LDA controlleronein+2
+    CMP #$00
+    BNE MOVESELECT
+    JMP STATE0END
+MOVESELECT:
+    INC selected
+    LDA SELECTY
+    CLC
+    ADC #$08
+    STA SELECTY
+    LDA selected
+    CMP SELECTMAX
+    BNE SELECTLOOP
+    LDA #$00
+    STA selected
+    LDA SELECTSTARTY
+    STA SELECTY
+SELECTLOOP:
+    JSR READCONTROLLER1
+    LDA controlleronein+2
+    CMP #$00
+    BNE SELECTLOOP
+    JMP STATE0END
+MENU:
+    LDA selected
+    CMP #$00
+    BEQ CHANGESCREEN
+    CMP #$01
+    BEQ HELPSCREEN
+    BNE CREDITSCREEN
+HELPSCREEN:
+    LDA #<HELPDATA ; Get the low byte of the bg data.
+    STA backgroundpos
+    LDA #>HELPDATA ; Get the high byte.
+    STA backgroundpos+1
+    JSR LOADNAM2
+    JSR HIDESELECT
+    JSR INFOSCREENIN
+HELPSTARTWAIT:
+    JSR READCONTROLLER1
+    LDA controlleronein+3
+    CMP #$00
+    BEQ HELPSTARTWAIT
+    JSR INFOSCREENOUT
+    JSR DISPLAYSELECT
+    JMP STATE0END
+CREDITSCREEN:
+    LDA #<CREDITSDATA ; Get the low byte of the bg data.
+    STA backgroundpos
+    LDA #>CREDITSDATA ; Get the high byte.
+    STA backgroundpos+1
+    JSR LOADNAM2
+    JSR HIDESELECT
+    JSR INFOSCREENIN
+CREDITSTARTWAIT:
+    JSR READCONTROLLER1
+    LDA controlleronein+3
+    CMP #$00
+    BEQ CREDITSTARTWAIT
+    JSR INFOSCREENOUT
+    JSR DISPLAYSELECT
     JMP STATE0END
 CHANGESCREEN:
     JSR FADEIN
@@ -345,6 +488,9 @@ CHANGESCREEN:
     STA objlimit
     LDA #$00
     STA cloudtick
+    ; Hide the cursor
+    LDA #$FF
+    STA SELECTY
     ; Display the clouds
     LDY CLOUDTILESTART
     LDX #$00
@@ -447,6 +593,9 @@ CHANGECHECK:
     LDA #>TITLEDATA ; Get the high byte.
     STA backgroundpos+1
     JSR LOADNAMINGAME
+    ; Show the cursor
+    LDA SELECTSTARTY
+    STA SELECTY
     JSR FADEOUT
 STATE2END:
     JMP LOOP
@@ -871,6 +1020,7 @@ COPYSPRITES:
     ; Handle the status bar
     LDA #$00
     STA PPUSCRL ; X scroll
+    LDA screenscroll
     STA PPUSCRL ; Y scroll
     LDA state
     CMP #$01
@@ -883,7 +1033,7 @@ WAITS0SET:
     BVC WAITS0SET
     LDA scroll
     STA PPUSCRL ; X scroll
-    LDA #$00
+    LDA screenscroll
     STA PPUSCRL ; Y scroll
 END:
     PLA

@@ -45,4 +45,6 @@ SPRITEDATA:
     .byte $50, $FF, %00100011, $88
     ; Cloud 3
     .byte $40, $FF, %00100011, $C0
+    ; Cursor
+    .byte $98, $1A, %00000011, $00
 
