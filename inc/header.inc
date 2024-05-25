@@ -17,7 +17,7 @@
 .segment "HEADER"
 .byte "NES"
 .byte $1a
-.byte $02 ; PRG ROM
+.byte $01 ; PRG ROM
 .byte $01 ; CHR ROM
 .byte %00000000 ; mapper + mirorring
 .byte $00
