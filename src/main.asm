@@ -61,9 +61,6 @@ tmp: .res 1
 objlimit: .res 1
 loopy: .res 1
 screenscroll: .res 1
-
-; Less used variables
-.segment "BSS"
 controlleronein: .res 8
 score: .res 8
 hi: .res 8
@@ -77,6 +74,9 @@ speedsub: .res 6
 animspeed: .res 1
 cloudtick: .res 1
 selected: .res 1
+
+; Less used variables
+.segment "BSS"
 
 ;------------------------------------;
 
