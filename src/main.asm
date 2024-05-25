@@ -74,6 +74,7 @@ wait: .res 6
 extraspeed: .res 6
 speedsub: .res 6
 animspeed: .res 1
+cloudtick: .res 1
 
 ;------------------------------------;
 
@@ -196,8 +197,6 @@ MEMORYCLEAR:
     STA $0500, X ; $0500 > $05FF
     STA $0600, X ; $0600 > $06FF
     STA $0700, X ; $0700 > $07FF
-    ; Clear the start of the BSS
-    STA $6000, X
     LDA #$FF ; I will store sprites in $0200 to $02FF.
     STA $0200, X ; $0200 > $02FF
     INX
@@ -344,6 +343,24 @@ CHANGESCREEN:
     STA PLAYERY
     LDA STARTLIMIT
     STA objlimit
+    LDA #$00
+    STA cloudtick
+    ; Display the clouds
+    LDY CLOUDTILESTART
+    LDX #$00
+CLOUDINITLOOP:
+    TYA
+    STA CLOUDTILE, X
+    LDA SPRITEDATA+CLOUDXSTART, X ; Get the default X coordinates of the sprite
+    STA CLOUDX, X
+    INY
+    INX
+    INX
+    INX
+    INX
+    CPX CLOUDLEN
+    BNE CLOUDINITLOOP
+    ; Initialize the objects
     LDX #$00
     LDY #$00
 OBJINITLOOP:
@@ -534,6 +551,17 @@ ISCOLLISION: ; If there is a collision
     ; Hide sprites
     LDA #$FF
     STA PLAYERY
+    ; Hide the clouds
+    LDA VOIDSPRITE
+    LDX #$00
+CLOUDHIDELOOP:
+    STA CLOUDTILE, X
+    INX
+    INX
+    INX
+    INX
+    CPX CLOUDLEN
+    BNE CLOUDHIDELOOP
     LDX #$00
 HIDEOBJLOOP:
     STA OBJECTY, X
@@ -725,6 +753,23 @@ ADDSPEED:
 RESETTICK:
     LDX #$00
     STX tick
+    ; Check if we should move the clouds
+    INC cloudtick
+    CMP CLOUDTICKMAX
+    BNE BIRDANIM
+    LDA #$00
+    STA cloudtick
+    ; Move the clouds
+    LDX #$00
+CLOUDLOOP:
+    DEC CLOUDX, X
+    INX
+    INX
+    INX
+    INX
+    CPX CLOUDLEN
+    BNE CLOUDLOOP
+BIRDANIM:
     ; Animate the birds
     LDX BIRDSTART
 BIRDLOOP:

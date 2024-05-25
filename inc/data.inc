@@ -16,7 +16,7 @@
 
 PALETTEDATA:
     .incbin "../pal/bgpal1.pal"
-    .byte $31, $1D, $2B, $2A, $31, $31, $2B, $2A, $31, $1D, $28, $38, $31, $30, $1D, $1D
+    .byte $31, $1D, $2B, $2A, $31, $31, $2B, $2A, $31, $1D, $28, $38, $31, $1D, $32, $30
 SPRITEDATA:
     ; Sprite 0
     .byte $1F, $0D, %00000001, $0 ; First byte = y, second = number of the tile, last = x.
@@ -35,4 +35,14 @@ SPRITEDATA:
     ; Bird 3
     .byte $FF, $10, %00100010, $FF
     ; Region
-    .byte $E2, $0E, %00000011, $E2
+    .byte $D2, $0E, %00000011, $E2
+    ; Cloud 1
+    .byte $30, $FF, %00100011, $30
+    .byte $30, $FF, %00100011, $38
+    .byte $30, $FF, %00100011, $40
+    ; Cloud 2
+    .byte $50, $FF, %00100011, $80
+    .byte $50, $FF, %00100011, $88
+    ; Cloud 3
+    .byte $40, $FF, %00100011, $C0
+
