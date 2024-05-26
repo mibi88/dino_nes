@@ -943,6 +943,7 @@ RESETTICK:
     STX tick
     ; Check if we should move the clouds
     INC cloudtick
+    LDA cloudtick
     CMP CLOUDTICKMAX
     BNE BIRDANIM
     LDA #$00
