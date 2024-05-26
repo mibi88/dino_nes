@@ -74,6 +74,8 @@ speedsub: .res 6
 animspeed: .res 1
 cloudtick: .res 1
 selected: .res 1
+period: .res 1
+sfxlen: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -304,7 +306,7 @@ SKIPY:
     BEQ NTSC
     CPY #$13
     BEQ NTSC
-    ; PAL or Dendy
+    ; PAL
     LDA PLAYERSPEEDPAL
     STA playerspeed
     LDA PLAYERSPEEDSUBPAL
@@ -323,6 +325,8 @@ SKIPY:
     STA extraspeedsub
     LDA ANIMPAL
     STA animspeed
+    LDA PERIODPAL
+    STA period
     JMP VBLANKCHECKB
 NTSC:
     LDA PLAYERSPEEDNTSC
@@ -343,6 +347,8 @@ NTSC:
     STA extraspeedsub
     LDA ANIMNTSC
     STA animspeed
+    LDA PERIODNTSC
+    STA period
     ; Change the sprite
     LDA NTSCSPRITE
     STA ntsc
@@ -489,6 +495,7 @@ CHANGESCREEN:
     STA objlimit
     LDA #$00
     STA cloudtick
+    STA sfxlen
     ; Hide the cursor
     LDA #$FF
     STA SELECTY
@@ -629,12 +636,25 @@ CHECKUP:
     LDY controlleronein ; A button
     CPY #$01
     BNE CHECKDOWN
-    ; Jump
-    LDA PLAYERY; Check if the player is on the floor
+    ; Check if the player is on the floor
+    LDA PLAYERY
     CMP FLOOR
     BNE CHECKDOWN
+    ; Jump
     LDA jumpspeed
     STA jump
+    ; Enable the first square wave channel
+    LDA #$00000001
+    STA APUFLAGS
+    ; Jump sound effect
+    LDA #%10111010
+    STA APUSQ1ENV
+    LDA period
+    STA APUSQ1LO
+    LDA #$00
+    STA APUSQ1HI
+    LDA max_tick
+    STA sfxlen
 CHECKDOWN:
     LDY controlleronein+1 ; B button
     CPY #$01
@@ -680,6 +700,9 @@ CHECKNEXT:
     BNE CHECKLOOP
     JMP MOVEOBJECT
 ISCOLLISION: ; If there is a collision
+    ; Disable all the audio channels
+    LDA #$00000000
+    STA APUFLAGS
     JSR PLAYERANIM
     LDA DEADPLAYER
     STA PLAYERTILE
@@ -895,6 +918,19 @@ ADDSPEED:
     LDA scroll
     ADC playerspeed
     STA scroll
+    ; Handle the jump sfx
+    LDX sfxlen
+    CPX #$00
+    BEQ SFXCHECKEND
+    DEX
+    STX sfxlen
+    CPX #$00
+    BNE SFXCHECKEND
+    ; Stop the jump sound effect
+    ; Disable all the audio channels
+    LDA #$00000000
+    STA APUFLAGS
+SFXCHECKEND:
     ; Handle ticks
     LDX tick
     INX
@@ -1043,6 +1079,7 @@ END:
     TAX
     PLA
     RTI
+
 .include "../inc/data.inc"
 .include "../inc/nametables.inc"
 ;------------------------------------;
