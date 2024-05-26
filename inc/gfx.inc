@@ -138,7 +138,7 @@ LOOP:
     INC backgroundpos+1
     CPX #$04
     BNE LOOP
-END:
+    ; Enable drawings again
     LDA #%10010000 ; Setting up the PPU.
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.
@@ -170,7 +170,7 @@ LOOP:
     INC backgroundpos+1
     CPX #$04
     BNE LOOP
-END:
+    ; Enable drawings again
     LDA #%10010000 ; Setting up the PPU.
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.

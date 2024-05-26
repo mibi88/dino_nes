@@ -46,7 +46,6 @@ random: .res 1
 jump: .res 2
 fall: .res 2
 playersuby: .res 1
-change: .res 1
 scroll: .res 2
 tick: .res 1
 oldx: .res 1
@@ -367,7 +366,6 @@ VBLANKCHECKB:
     LDX #$00 ; Prepairing for a loop.
     JSR LOADPALETTES
     ; Load title.
-LOADTITLE:
     LDA #<TITLEDATA ; Get the low byte of the bg data.
     STA backgroundpos
     LDA #>TITLEDATA ; Get the high byte.
@@ -581,17 +579,10 @@ RESETLOOP:
 STATE0END:
     JMP LOOP
 STATE2:
-    LDA change
-    CMP #$00
-    BNE CHANGECHECK
+    JSR READCONTROLLER1
     LDA controlleronein+3
-    STA change
     CMP #$00
     BEQ STATE2END
-CHANGECHECK:
-    LDA controlleronein+3
-    CMP #$00
-    BNE STATE2END
     JSR FADEIN
     LDA #$00
     STA state
@@ -705,9 +696,6 @@ ISCOLLISION: ; If there is a collision
     ; Change to the game over screen
     LDA #$02
     STA state
-    ; Reset change because START was not pressed.
-    LDA #$00
-    STA change
     ; Reset palette
     LDA #$00
     STA night
@@ -813,7 +801,7 @@ EXTRALOOP:
     LDA OBJECTX, X
     SBC #$00
     STA OBJECTX, X
-INCSKIP:
+    ; End of the loop
     INY
     CPY loopx
     BCC EXTRALOOP
@@ -871,7 +859,6 @@ MOVELOOPEND:
 MOVEEND:
     LDA #$00
     STA extra
-NMIEND:
     ; Apply gravity and jump
     ; Jump
     LDA playersuby
