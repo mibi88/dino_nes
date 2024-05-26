@@ -52,7 +52,7 @@ PPUOAM  = $4014
 
 .define EXTRASPEEDSUBPAL #$B4
 
-.define TICKMAXPAL #$0C
+.define TICKMAXPAL #$0A
 
 .define ANIMPAL #$06
 
@@ -68,7 +68,7 @@ PPUOAM  = $4014
 
 .define EXTRASPEEDSUBNTSC #$96
 
-.define TICKMAXNTSC #$0A
+.define TICKMAXNTSC #$0C
 
 .define ANIMNTSC #$05
 
