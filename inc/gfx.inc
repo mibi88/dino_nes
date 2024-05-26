@@ -130,19 +130,14 @@ LOOP:
     ; Copy the data.
     LDA (backgroundpos), Y
     STA PPUDATA
-    INY
     ; Check if we need to continue.
-    CPX #$04
-    BNE XLOOP
-    CPY #$01
-    BEQ END
-XLOOP:
-    ; X loop.
+    INY
     CPY #$00
     BNE LOOP
     INX
     INC backgroundpos+1
-    JMP LOOP
+    CPX #$04
+    BNE LOOP
 END:
     LDA #%10010000 ; Setting up the PPU.
     STA PPUCTRL
@@ -167,19 +162,14 @@ LOOP:
     ; Copy the data.
     LDA (backgroundpos), Y
     STA PPUDATA
-    INY
     ; Check if we need to continue.
-    CPX #$04
-    BNE XLOOP
-    CPY #$01
-    BEQ END
-XLOOP:
-    ; X loop.
+    INY
     CPY #$00
     BNE LOOP
     INX
     INC backgroundpos+1
-    JMP LOOP
+    CPX #$04
+    BNE LOOP
 END:
     LDA #%10010000 ; Setting up the PPU.
     STA PPUCTRL
