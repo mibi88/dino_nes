@@ -382,9 +382,10 @@ LOADSPRITES:
     ; Set region sprite
     LDA ntsc
     CMP NTSCSPRITE
-    BNE LOOP
+    BNE START
     STA REGIONTILE
     ; Animation
+START:
     JSR DISPLAYSELECT
 LOOP:
     ; Check for NMI
