@@ -635,11 +635,11 @@ FALL:
 CHECKUP:
     LDY controlleronein ; A button
     CPY #$01
-    BNE CHECKDOWN
+    BNE COLLISIONCHECK
     ; Check if the player is on the floor
     LDA PLAYERY
     CMP FLOOR
-    BNE CHECKDOWN
+    BNE COLLISIONCHECK
     ; Jump
     LDA jumpspeed
     STA jump
@@ -655,11 +655,6 @@ CHECKUP:
     STA APUSQ1HI
     LDA max_tick
     STA sfxlen
-CHECKDOWN:
-    LDY controlleronein+1 ; B button
-    CPY #$01
-    BNE COLLISIONCHECK
-    ; TODO: Crouch
 COLLISIONCHECK:
     ; Adapt the player position for collision check
     LDA PLAYERY
