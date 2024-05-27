@@ -186,7 +186,7 @@ LOOP:
     BIT PPUSTAT ; Setup the PPU for the nametable data.
     LDA #$20
     STA PPUADDR
-    LDA #$48
+    LDA #$69
     STA PPUADDR
     LDX #$00
     ; Set the tiles
@@ -201,7 +201,7 @@ SLOOP:
     ; Load the hiscore
     LDA #$20
     STA PPUADDR
-    LDA #$57
+    LDA #$75
     STA PPUADDR
     LDX #$00
 HLOOP:
@@ -228,7 +228,7 @@ HLOOP:
     BIT PPUSTAT ; Setup the PPU for the nametable data.
     LDA #$21
     STA PPUADDR
-    LDA #$89
+    LDA #$8F
     STA PPUADDR
     LDX #$00
     ; Set the tiles
@@ -243,7 +243,7 @@ SLOOP:
     ; Load the hiscore
     LDA #$21
     STA PPUADDR
-    LDA #$96
+    LDA #$AE
     STA PPUADDR
     LDX #$00
 HLOOP:
