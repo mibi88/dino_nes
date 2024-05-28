@@ -46,6 +46,17 @@ LOOP:
     LDX #$00
     LDY night
 LOOP:
+    ; Make the HUD turn white if needed
+    LDA gamestart
+    CMP #$01
+    BNE CONTINUE
+    LDA night
+    CMP NIGHT_MAX
+    BNE CONTINUE
+    LDA NIGHTPALETTE, X
+    CMP #$FF
+    BNE SKIP
+CONTINUE:
     LDA PALETTEDATA, X
     SEC
     SBC pnight

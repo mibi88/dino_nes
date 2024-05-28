@@ -75,6 +75,7 @@ cloudtick: .res 1
 selected: .res 1
 period: .res 1
 sfxlen: .res 1
+gamestart: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -576,6 +577,8 @@ RESETLOOP:
     LDA #$00
     STA PLAYERY
     JSR PLAYERANIM
+    LDA #$01
+    STA gamestart
 STATE0END:
     JMP LOOP
 STATE2:
@@ -686,6 +689,8 @@ CHECKNEXT:
     BNE CHECKLOOP
     JMP MOVEOBJECT
 ISCOLLISION: ; If there is a collision
+    LDA #$00
+    STA gamestart
     ; Disable all the audio channels
     LDA #$00000000
     STA APUFLAGS
@@ -696,10 +701,6 @@ ISCOLLISION: ; If there is a collision
     ; Change to the game over screen
     LDA #$02
     STA state
-    ; Reset palette
-    LDA #$00
-    STA night
-    JSR LOADPALETTESINGAME
     ; Load the game over nametable
     LDA #<GAMEOVERDATA ; Get the low byte of the bg data.
     STA backgroundpos
@@ -780,7 +781,13 @@ MOVE:
     LDA OBJECTTILE, X
     CMP VOIDSPRITE
     BNE UPDATEX
+    CPX BIRDSTART
+    BCS BIRDTILE
     LDA #$0C
+    STA OBJECTTILE, X
+    JMP UPDATEX
+BIRDTILE:
+    LDA #$10
     STA OBJECTTILE, X
 UPDATEX:
     ; Apply the extra speed

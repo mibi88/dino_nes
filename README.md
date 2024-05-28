@@ -10,7 +10,6 @@ reset.
 
 # Possible improvements
 
-* Make the HUD turn white on night time
 * Set a minimal spacing between the cacti to make the game simpler and not
 require pixel perfect jumps, that can be frustrating
 * Remove flickering when loading nametables

@@ -17,6 +17,9 @@
 PALETTEDATA:
     .incbin "../pal/bgpal1.pal"
     .byte $31, $1D, $2B, $2A, $31, $31, $2B, $2A, $31, $1D, $28, $38, $31, $1D, $32, $30
+NIGHTPALETTE: ; Adapt the HUD on night time
+    .byte $FF, $FF, $FF, $FF, $FF, $32, $30, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF
+    .byte $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF
 SPRITEDATA:
     ; Sprite 0
     .byte $1F, $0D, %00000001, $0 ; First byte = y, second = number of the tile, last = x.

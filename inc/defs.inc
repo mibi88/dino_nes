@@ -89,6 +89,12 @@ PPUOAM  = $4014
 
 .define CURSOR #$1A
 
+.define TEXTCOLOR1 #$05
+.define TEXTCOLOR2 #$06
+
+.define NIGHTTEXT1 #$30
+.define NIGHTTEXT2 #$32
+
 ; 1662607/(440*16)-1 = 440 Hz wave on PAL
 .define PERIODPAL #$EB
 ; 1789773/(440*16)-1 = 440 Hz wave on NTSC
