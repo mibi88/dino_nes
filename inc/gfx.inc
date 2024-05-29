@@ -46,6 +46,12 @@ LOOP:
     LDX #$00
     LDY night
 LOOP:
+    LDA night
+    CMP BLACK_NIGHT
+    BNE NOTBLACK
+    LDA #$1D
+    JMP SKIP
+NOTBLACK:
     ; Make the HUD turn white if needed
     LDA gamestart
     CMP #$01
@@ -127,6 +133,10 @@ END:
 
 .proc LOADNAMINGAME
     LDA #$00
+    CMP nmi
+    BEQ LOADNAMINGAME
+    STA nmi
+    LDA #$00
     STA PPUCTRL ; Zero at PPU registers.
     STA PPUMASK
     ; Get ready for the loop.
@@ -147,6 +157,34 @@ LOOP:
     BNE LOOP
     INX
     INC backgroundpos+1
+    ; Enable drawings again
+    LDA #%10010000 ; Setting up the PPU.
+    STA PPUCTRL
+    LDA #%00011110 ; Enabling drawings.
+    STA PPUMASK
+    LDA #$02 ; Copy the sprite data into the PPU.
+    STA PPUOAM
+    LDA scroll
+    STA PPUSCRL
+    LDA screenscroll
+    STA PPUSCRL
+WAITNMI:
+    LDA #$00
+    CMP nmi
+    BEQ WAITNMI
+    STA nmi
+    BIT PPUSTAT
+    ; Disable rendering
+    LDA #$00
+    STA PPUCTRL ; Zero at PPU registers.
+    STA PPUMASK
+    LDA #$20
+    STX tmp
+    CLC
+    ADC tmp
+    STA PPUADDR
+    STY PPUADDR
+    ; Check if we need to continue
     CPX #$04
     BNE LOOP
     ; Enable drawings again
@@ -154,10 +192,20 @@ LOOP:
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.
     STA PPUMASK
+    LDA #$02 ; Copy the sprite data into the PPU.
+    STA PPUOAM
+    LDA scroll
+    STA PPUSCRL
+    LDA screenscroll
+    STA PPUSCRL
     RTS
 .endproc
 
 .proc LOADNAM2
+    LDA #$00
+    CMP nmi
+    BEQ LOADNAM2
+    STA nmi
     LDA #$00
     STA PPUCTRL ; Zero at PPU registers.
     STA PPUMASK
@@ -179,6 +227,34 @@ LOOP:
     BNE LOOP
     INX
     INC backgroundpos+1
+    ; Enable drawings again
+    LDA #%10010000 ; Setting up the PPU.
+    STA PPUCTRL
+    LDA #%00011110 ; Enabling drawings.
+    STA PPUMASK
+    LDA #$02 ; Copy the sprite data into the PPU.
+    STA PPUOAM
+    LDA scroll
+    STA PPUSCRL
+    LDA screenscroll
+    STA PPUSCRL
+WAITNMI:
+    LDA #$00
+    CMP nmi
+    BEQ WAITNMI
+    STA nmi
+    BIT PPUSTAT
+    ; Disable rendering
+    LDA #$00
+    STA PPUCTRL ; Zero at PPU registers.
+    STA PPUMASK
+    LDA #$28
+    STX tmp
+    CLC
+    ADC tmp
+    STA PPUADDR
+    STY PPUADDR
+    ; Check if we need to continue
     CPX #$04
     BNE LOOP
     ; Enable drawings again
@@ -186,6 +262,12 @@ LOOP:
     STA PPUCTRL
     LDA #%00011110 ; Enabling drawings.
     STA PPUMASK
+    LDA #$02 ; Copy the sprite data into the PPU.
+    STA PPUOAM
+    LDA scroll
+    STA PPUSCRL
+    LDA screenscroll
+    STA PPUSCRL
     RTS
 .endproc
 

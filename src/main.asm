@@ -447,12 +447,12 @@ MENU:
     BEQ HELPSCREEN
     BNE CREDITSCREEN
 HELPSCREEN:
+    JSR HIDESELECT
     LDA #<HELPDATA ; Get the low byte of the bg data.
     STA backgroundpos
     LDA #>HELPDATA ; Get the high byte.
     STA backgroundpos+1
     JSR LOADNAM2
-    JSR HIDESELECT
     JSR INFOSCREENIN
 HELPSTARTWAIT:
     JSR READCONTROLLER1
@@ -463,12 +463,12 @@ HELPSTARTWAIT:
     JSR DISPLAYSELECT
     JMP STATE0END
 CREDITSCREEN:
+    JSR HIDESELECT
     LDA #<CREDITSDATA ; Get the low byte of the bg data.
     STA backgroundpos
     LDA #>CREDITSDATA ; Get the high byte.
     STA backgroundpos+1
     JSR LOADNAM2
-    JSR HIDESELECT
     JSR INFOSCREENIN
 CREDITSTARTWAIT:
     JSR READCONTROLLER1
@@ -480,14 +480,14 @@ CREDITSTARTWAIT:
     JMP STATE0END
 CHANGESCREEN:
     JSR FADEIN
-    LDA #$01
-    STA state
     ; Load the background
     LDA #<GAMEDATA ; Get the low byte of the bg data.
     STA backgroundpos
     LDA #>GAMEDATA ; Get the high byte.
     STA backgroundpos+1
     JSR LOADNAMINGAME
+    LDA #$01
+    STA state
     LDA FLOOR
     STA PLAYERY
     LDA STARTLIMIT
