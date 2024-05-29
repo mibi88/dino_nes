@@ -179,9 +179,10 @@ LOOP:
     STA PPUDATA
     ; Check if we need to continue.
     INY
+    LDA loadingspeed
     TYA
-    AND #%00000011
-    CMP #%00000011
+    AND loadingspeed
+    CMP loadingspeed
     BEQ ENABLEDRAWING
     CPY #$00
     BNE LOOP

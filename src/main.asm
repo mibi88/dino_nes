@@ -76,6 +76,7 @@ selected: .res 1
 period: .res 1
 sfxlen: .res 1
 gamestart: .res 1
+loadingspeed: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -327,6 +328,8 @@ SKIPY:
     STA animspeed
     LDA PERIODPAL
     STA period
+    LDA LOADINGSPEEDPAL
+    STA loadingspeed
     JMP VBLANKCHECKB
 NTSC:
     LDA PLAYERSPEEDNTSC
@@ -349,6 +352,8 @@ NTSC:
     STA animspeed
     LDA PERIODNTSC
     STA period
+    LDA LOADINGSPEEDNTSC
+    STA loadingspeed
     ; Change the sprite
     LDA NTSCSPRITE
     STA ntsc
