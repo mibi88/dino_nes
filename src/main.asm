@@ -77,6 +77,7 @@ period: .res 1
 sfxlen: .res 1
 gamestart: .res 1
 loadingspeed: .res 1
+oldnight: .res 1
 
 ; Less used variables
 .segment "BSS"
@@ -1034,7 +1035,11 @@ NMI: ;Non-maskable interrupt.
     PHA
     BIT PPUSTAT
     ; Update the palette
+    LDA night
+    CMP oldnight
+    BEQ NOPALETTECHANGE
     JSR LOADPALETTESINGAME
+NOPALETTECHANGE:
     LDA #$01
     STA nmi
     ; Update the score

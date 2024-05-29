@@ -30,6 +30,7 @@ LOOP:
 
 .proc LOADPALETTESINGAME
     LDA night
+    STA oldnight
     ASL
     ASL
     ASL
@@ -162,18 +163,24 @@ LOOP:
     CMP nmi
     BEQ LOADNAM2
     STA nmi
-    LDA #$00
-    STA PPUCTRL ; Zero at PPU registers.
-    STA PPUMASK
     ; Get ready for the loop.
     BIT PPUSTAT ; Setup the PPU for the nametable data.
+    LDA #%10010000 ; Setting up the PPU.
+    STA PPUCTRL
     LDA #$28
+    STA tmp
     STA PPUADDR
     LDA #$00
     STA PPUADDR
     LDX #$00
     LDY #$00
 LOOP:
+    LDA #%10010000 ; Setting up the PPU.
+    STA PPUCTRL
+    LDA scroll
+    STA PPUSCRL
+    LDA screenscroll
+    STA PPUSCRL
     ; Copy the data.
     LDA (backgroundpos), Y
     STA PPUDATA
@@ -187,48 +194,22 @@ LOOP:
     BNE LOOP
     INX
     INC backgroundpos+1
+    INC tmp
 ENABLEDRAWING:
-    ; Enable drawings again
-    LDA #%10010000 ; Setting up the PPU.
-    STA PPUCTRL
-    LDA #%00011110 ; Enabling drawings.
-    STA PPUMASK
-    LDA #$02 ; Copy the sprite data into the PPU.
-    STA PPUOAM
-    LDA scroll
-    STA PPUSCRL
-    LDA screenscroll
-    STA PPUSCRL
 WAITNMI:
     LDA #$00
     CMP nmi
     BEQ WAITNMI
     STA nmi
     BIT PPUSTAT
-    ; Disable rendering
-    LDA #$00
-    STA PPUCTRL ; Zero at PPU registers.
-    STA PPUMASK
-    LDA #$28
-    STX tmp
-    CLC
-    ADC tmp
+    LDA tmp
     STA PPUADDR
     STY PPUADDR
     ; Check if we need to continue
     CPX #$04
     BNE LOOP
-    ; Enable drawings again
     LDA #%10010000 ; Setting up the PPU.
     STA PPUCTRL
-    LDA #%00011110 ; Enabling drawings.
-    STA PPUMASK
-    LDA #$02 ; Copy the sprite data into the PPU.
-    STA PPUOAM
-    LDA scroll
-    STA PPUSCRL
-    LDA screenscroll
-    STA PPUSCRL
     RTS
 .endproc
 
