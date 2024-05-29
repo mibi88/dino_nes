@@ -179,10 +179,15 @@ LOOP:
     STA PPUDATA
     ; Check if we need to continue.
     INY
+    TYA
+    AND #%00000011
+    CMP #%00000011
+    BEQ ENABLEDRAWING
     CPY #$00
     BNE LOOP
     INX
     INC backgroundpos+1
+ENABLEDRAWING:
     ; Enable drawings again
     LDA #%10010000 ; Setting up the PPU.
     STA PPUCTRL
