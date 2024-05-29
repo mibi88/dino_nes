@@ -179,7 +179,6 @@ LOOP:
     STA PPUDATA
     ; Check if we need to continue.
     INY
-    LDA loadingspeed
     TYA
     AND loadingspeed
     CMP loadingspeed
